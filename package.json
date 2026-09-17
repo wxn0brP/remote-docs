@@ -1,0 +1,23 @@
+{
+	"name": "@wxn0brp/remote-docs",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "bun build src/index.ts --outdir public --target browser --sourcemap",
+		"gen-config": "bun run src/gen-config.ts"
+	},
+	"bin": {
+		"remote-docs-gen": "src/gen-config.ts"
+	},
+	"dependencies": {
+		"highlight.js": "^11.12.0",
+		"marked": "^14",
+		"marked-highlight": "^2.2.4"
+	},
+	"devDependencies": {
+		"@types/bun": "*",
+		"@wxn0brp/biome": "*",
+		"typescript": "^7"
+	}
+}

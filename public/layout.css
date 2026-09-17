@@ -1,0 +1,304 @@
+#hdr {
+	flex: 0 0 56px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 24px;
+	background: var(--bg-2);
+	border-bottom: 1px solid var(--border);
+}
+
+#hdr .hdr-left {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+
+#hdr .hdr-right {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+#reload-btn {
+	padding: 4px 10px;
+	font-size: 16px;
+	line-height: 1;
+}
+
+#menu-toggle {
+	display: none;
+	background: transparent;
+	border: 0;
+	padding: 8px 10px;
+	flex-direction: column;
+	gap: 4px;
+}
+
+#menu-toggle:hover {
+	border: 0;
+	background: var(--bg-3);
+}
+
+#menu-toggle span {
+	display: block;
+	width: 22px;
+	height: 2px;
+	background: var(--fg);
+	border-radius: 1px;
+}
+
+#hdr h1 {
+	margin: 0;
+	font-size: 17px;
+	font-weight: 600;
+}
+
+#hdr h1 a,
+#hdr>a {
+	color: var(--fg);
+}
+
+#hdr>a {
+	font-size: 13px;
+	color: var(--fg-dim);
+}
+
+#hdr>a:hover {
+	color: var(--accent);
+}
+
+#app {
+	flex: 1;
+	display: grid;
+	grid-template-columns: 260px 1fr 220px;
+	min-height: 0;
+}
+
+#nav {
+	overflow-y: auto;
+	padding: 16px 12px;
+	border-right: 1px solid var(--border);
+	background: var(--bg);
+}
+
+#nav ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+#nav li a {
+	display: block;
+	padding: 5px 10px;
+	border-radius: 4px;
+	color: var(--fg);
+	font-size: 14px;
+	line-height: 1.4;
+	border-left: 2px solid transparent;
+}
+
+#nav li a:hover {
+	background: var(--bg-2);
+	color: var(--accent-hi);
+	text-decoration: none;
+}
+
+#nav li a.active {
+	color: var(--accent);
+	border-left-color: var(--accent);
+	background: var(--bg-2);
+}
+
+#nav details {
+	margin-bottom: 4px;
+}
+
+#nav>ul>li>details {
+	margin-bottom: 10px;
+}
+
+#nav summary {
+	padding: 5px 10px;
+	color: var(--fg-dim);
+	font-size: 13px;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-weight: 600;
+}
+
+#nav summary:hover {
+	color: var(--accent);
+}
+
+#content {
+	overflow-y: auto;
+	scrollbar-gutter: stable;
+}
+
+#content-inner {
+	max-width: 920px;
+	width: 100%;
+	margin: 0 auto;
+	padding: 28px 40px 60px;
+}
+
+#content h1 {
+	font-size: 30px;
+	margin: 0 0 8px;
+}
+
+#content h2 {
+	font-size: 22px;
+	margin: 32px 0 12px;
+	padding-bottom: 6px;
+	border-bottom: 1px solid var(--border);
+}
+
+#content h3 {
+	font-size: 17px;
+	margin: 24px 0 8px;
+}
+
+#content p {
+	margin: 10px 0;
+}
+
+#content ul,
+#content ol {
+	padding-left: 22px;
+}
+
+#content li {
+	margin: 4px 0;
+}
+
+#toc {
+	overflow-y: auto;
+	padding: 16px 12px;
+	border-left: 1px solid var(--border);
+	background: var(--bg);
+	font-size: 13px;
+}
+
+#toc ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+#toc li {
+	margin: 2px 0;
+}
+
+#toc li.l3 {
+	padding-left: 12px;
+}
+
+#toc li.l4 {
+	padding-left: 24px;
+}
+
+#toc a {
+	display: block;
+	padding: 3px 8px;
+	color: var(--fg-dim);
+	border-radius: 4px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#toc a:hover {
+	color: var(--accent-hi);
+	text-decoration: none;
+}
+
+#toc a.active {
+	color: var(--accent);
+	background: var(--bg-2);
+}
+
+.loading {
+	color: var(--fg-dim);
+	font-style: italic;
+}
+
+.error {
+	color: var(--error);
+}
+
+#progress {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: var(--accent);
+	transform: scaleX(0);
+	transform-origin: left center;
+	z-index: 40;
+	pointer-events: none;
+	will-change: transform;
+}
+
+#help-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.6);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	z-index: 50;
+}
+
+#help-overlay.open {
+	display: flex;
+}
+
+#help-overlay .help-card {
+	background: var(--bg-2);
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	padding: 24px 28px;
+	min-width: 280px;
+	max-width: 90vw;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+#help-overlay h2 {
+	margin: 0 0 16px;
+	font-size: 18px;
+}
+
+#help-overlay table {
+	border: 0;
+	margin: 0 0 12px;
+}
+
+#help-overlay td {
+	border: 0;
+	padding: 4px 12px 4px 0;
+	vertical-align: top;
+}
+
+#help-overlay kbd {
+	background: var(--bg-3);
+	border: 1px solid var(--border);
+	border-bottom-width: 2px;
+	border-radius: 4px;
+	padding: 1px 6px;
+	font: 12px ui-monospace, Menlo, Consolas, monospace;
+	color: var(--accent);
+}
+
+#help-overlay .hint {
+	color: var(--fg-dim);
+	font-size: 13px;
+	margin: 8px 0 16px;
+}
+
+#help-overlay #help-close {
+	width: 100%;
+}

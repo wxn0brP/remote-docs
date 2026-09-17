@@ -1,0 +1,115 @@
+@media (max-width: 900px) {
+	#app {
+		grid-template-columns: 1fr;
+	}
+
+	#toc {
+		display: none;
+	}
+
+	#content-inner {
+		padding: 20px 18px 40px;
+	}
+
+	#menu-toggle {
+		display: flex;
+	}
+
+	#nav {
+		position: fixed;
+		top: 56px;
+		left: 0;
+		bottom: 0;
+		width: min(280px, 80vw);
+		z-index: 30;
+		background: var(--bg);
+		border-right: 1px solid var(--border);
+		box-shadow: 4px 0 12px rgba(0, 0, 0, 0.4);
+		display: none;
+		overflow-y: auto;
+	}
+
+	body.nav-open #nav {
+		display: block;
+	}
+
+	body.nav-open {
+		overflow: hidden;
+	}
+}
+
+@media print {
+
+	#hdr,
+	#nav,
+	#toc,
+	#progress,
+	#help-overlay,
+	button {
+		display: none !important;
+	}
+
+	html,
+	body {
+		background: #fff !important;
+		color: #000 !important;
+		font: 12pt/1.45 Georgia, "Times New Roman", serif;
+	}
+
+	#app {
+		display: block;
+	}
+
+	#content {
+		overflow: visible !important;
+		max-width: none;
+		padding: 0;
+	}
+
+	#content h1,
+	#content h2,
+	#content h3,
+	#content h4 {
+		color: #000;
+		page-break-after: avoid;
+	}
+
+	#content h2 {
+		border-bottom: 1px solid #000;
+	}
+
+	pre,
+	code,
+	blockquote,
+	table {
+		border-color: #999 !important;
+	}
+
+	pre {
+		background: #f4f4f4 !important;
+		color: #000;
+		page-break-inside: avoid;
+		white-space: pre-wrap;
+		word-wrap: break-word;
+	}
+
+	a {
+		color: #000;
+		text-decoration: underline;
+	}
+
+	a[href^="http"]::after {
+		content: " (" attr(href) ")";
+		font-size: 0.85em;
+		word-break: break-all;
+	}
+
+	a[href^="#"]::after {
+		content: "";
+	}
+
+	img {
+		max-width: 100% !important;
+		page-break-inside: avoid;
+	}
+}
