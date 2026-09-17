@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="color-scheme" content="dark">
+	<title>Docs</title>
+	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="hl.css">
+	<link rel="stylesheet" href="layout.css">
+	<link rel="stylesheet" href="responsive.css">
+</head>
+
+<body>
+	<header id="hdr">
+		<div class="hdr-left">
+			<button id="menu-toggle" aria-label="Menu" aria-controls="nav" aria-expanded="false">
+				<span></span><span></span><span></span>
+			</button>
+			<h1 id="hdr-title"></h1>
+		</div>
+		<div class="hdr-right">
+			<button id="reload-btn" type="button" title="Reload (clear cache)" aria-label="Reload">↻</button>
+			<a id="hdr-repo" href="#" target="_blank" rel="noopener" hidden>GitHub</a>
+		</div>
+	</header>
+	<main id="app">
+		<aside id="nav"></aside>
+		<article id="content">
+			<div id="content-inner">
+				<p class="loading">loading...</p>
+			</div>
+		</article>
+		<aside id="toc"></aside>
+	</main>
+	<div id="progress" aria-hidden="true"></div>
+	<div id="help-overlay" role="dialog" aria-modal="true" aria-labelledby="help-title">
+		<div class="help-card">
+			<h2 id="help-title">Keyboard shortcuts</h2>
+			<table>
+				<tr>
+					<td><kbd>j</kbd></td>
+					<td>next page</td>
+				</tr>
+				<tr>
+					<td><kbd>k</kbd></td>
+					<td>previous page</td>
+				</tr>
+				<tr>
+					<td><kbd>g</kbd> <kbd>g</kbd></td>
+					<td>first page</td>
+				</tr>
+				<tr>
+					<td><kbd>G</kbd></td>
+					<td>last page</td>
+				</tr>
+				<tr>
+					<td><kbd>?</kbd></td>
+					<td>show/hide help</td>
+				</tr>
+				<tr>
+					<td><kbd>Esc</kbd></td>
+					<td>close menu / help</td>
+				</tr>
+			</table>
+			<p class="hint">shortcuts work when focus is not in a text field.</p>
+			<button id="help-close" type="button">close (Esc)</button>
+		</div>
+	</div>
+	<script type="module" src="index.js"></script>
+</body>
+
+</html>
