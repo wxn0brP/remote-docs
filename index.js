@@ -1620,7 +1620,9 @@ var state = {
   toc: [],
   loading: true,
   error: "",
-  singleFile: false
+  singleFile: false,
+  answers: new Map,
+  email: ""
 };
 
 // src/dom.ts
@@ -1630,6 +1632,211 @@ var $content = $("content");
 var $contentInner = $("content-inner");
 var $toc = $("toc");
 var $progress = $("progress");
+
+// src/questions.ts
+function parseQuestions(lang, raw) {
+  const type = lang.replace(/^question-/, "").trim();
+  if (type !== "radio" && type !== "checkbox" && type !== "text")
+    return null;
+  const lines = raw.split(`
+`).map((l) => l.trim());
+  const text = lines[0] || "";
+  const options = lines.slice(1).filter((l) => l.startsWith("- ")).map((l) => l.slice(2).trim());
+  return {
+    id: nextQid(),
+    type,
+    text,
+    options
+  };
+}
+var qidCounter = 0;
+function nextQid() {
+  return qidCounter++;
+}
+function resetQidCounter() {
+  qidCounter = 0;
+}
+function renderQuestionHTML(q) {
+  const opts = q.options.map((o) => esc(o));
+  if (q.type === "text") {
+    return `<div class="q-block" data-qid="${q.id}" data-type="text">` + `<p class="q-text">${esc(q.text)}</p>` + `<textarea class="q-textarea" placeholder="Your answer..."></textarea>` + `</div>`;
+  }
+  const inputType = q.type === "radio" ? "radio" : "checkbox";
+  const optionsHTML = q.options.map((o, i) => `<label class="q-option"><input type="${inputType}" name="q${q.id}" value="${i}"> ${esc(o)}</label>`).join("") + `<label class="q-option q-custom"><input type="${inputType}" name="q${q.id}" value="__custom__"> Other</label>` + `<textarea class="q-custom-input" placeholder="Your answer..." hidden></textarea>`;
+  return `<div class="q-block" data-qid="${q.id}" data-type="${q.type}" data-options='${escAttr(JSON.stringify(opts))}'>` + `<p class="q-text">${esc(q.text)}</p>` + optionsHTML + `</div>`;
+}
+function initQuestions() {
+  const blocks = document.querySelectorAll(".q-block");
+  if (!blocks.length)
+    return;
+  for (const block of blocks) {
+    const qid = Number(block.dataset.qid);
+    const type = block.dataset.type;
+    const saved = state.answers.get(qid);
+    if (!saved)
+      continue;
+    if (type === "text") {
+      const ta = block.querySelector(".q-textarea");
+      if (ta)
+        ta.value = String(saved.value);
+    } else {
+      const values = Array.isArray(saved.value) ? saved.value : [
+        saved.value
+      ];
+      for (const v of values) {
+        const input = block.querySelector(`input[value="${v}"]`);
+        if (input) {
+          input.checked = true;
+          if (v === "__custom__") {
+            const ta = block.querySelector(".q-custom-input");
+            if (ta) {
+              ta.hidden = false;
+              ta.value = saved.custom ?? "";
+            }
+          }
+        }
+      }
+    }
+  }
+}
+function handleQuestionChange(e) {
+  const target = e.target;
+  const input = target;
+  if (!input.matches(".q-block input"))
+    return;
+  const block = input.closest(".q-block");
+  if (!block)
+    return;
+  const qid = Number(block.dataset.qid);
+  const type = block.dataset.type;
+  if (type === "radio") {
+    const options = JSON.parse(block.dataset.options ?? "[]");
+    const isCustom = input.value === "__custom__";
+    const ta = block.querySelector(".q-custom-input");
+    if (ta)
+      ta.hidden = !isCustom;
+    state.answers.set(qid, {
+      value: isCustom ? "__custom__" : options[Number(input.value)]
+    });
+  } else if (type === "checkbox") {
+    const options = JSON.parse(block.dataset.options ?? "[]");
+    const checked = Array.from(block.querySelectorAll("input:checked"));
+    const values = [];
+    let hasCustom = false;
+    for (const cb of checked) {
+      if (cb.value === "__custom__")
+        hasCustom = true;
+      else
+        values.push(options[Number(cb.value)]);
+    }
+    const ta = block.querySelector(".q-custom-input");
+    if (ta)
+      ta.hidden = !hasCustom;
+    state.answers.set(qid, {
+      value: values
+    });
+  }
+  updateAnswersButton();
+}
+function handleQuestionInput(e) {
+  const target = e.target;
+  const block = target.closest(".q-block");
+  if (!block)
+    return;
+  const qid = Number(block.dataset.qid);
+  const type = block.dataset.type;
+  const ta = target;
+  if (type === "text") {
+    state.answers.set(qid, {
+      value: ta.value
+    });
+  } else if (ta.classList.contains("q-custom-input")) {
+    const answer = state.answers.get(qid);
+    if (answer)
+      answer.custom = ta.value;
+  }
+  updateAnswersButton();
+}
+function updateAnswersButton() {
+  const btn = $("answers-btn");
+  if (!btn)
+    return;
+  btn.hidden = state.answers.size === 0;
+}
+function showAnswersModal() {
+  const modal = $("answers-modal");
+  if (!modal)
+    return;
+  const lines = [];
+  const blocks = document.querySelectorAll(".q-block");
+  for (const block of blocks) {
+    const qid = Number(block.dataset.qid);
+    const type = block.dataset.type;
+    const answer = state.answers.get(qid);
+    if (!answer)
+      continue;
+    const qText = block.querySelector(".q-text")?.textContent ?? "";
+    lines.push(`Q: ${qText}`);
+    if (type === "text") {
+      lines.push(`A: ${answer.value || "(empty)"}`);
+    } else {
+      const options = JSON.parse(block.dataset.options ?? "[]");
+      const values = Array.isArray(answer.value) ? answer.value : [
+        answer.value
+      ];
+      const labels = values.map((v) => {
+        if (v === "__custom__")
+          return `Other: ${answer.custom || "(empty)"}`;
+        if (typeof v === "string") {
+          const idx = options.indexOf(v);
+          return idx >= 0 ? options[idx] : v;
+        }
+        return options[Number(v)] ?? String(v);
+      });
+      lines.push(`A: ${labels.join(", ")}`);
+    }
+    lines.push("");
+  }
+  const summary = lines.join(`
+`).trim();
+  $("answers-body").textContent = summary;
+  $("answers-copy").textContent = "Copy";
+  const emailBtn = $("answers-email");
+  if (emailBtn)
+    emailBtn.hidden = !state.email;
+  modal.hidden = false;
+}
+function hideAnswersModal() {
+  const modal = $("answers-modal");
+  if (modal)
+    modal.hidden = true;
+}
+async function copyAnswers() {
+  const body = $("answers-body");
+  if (!body)
+    return;
+  try {
+    await navigator.clipboard.writeText(body.textContent ?? "");
+    const btn = $("answers-copy");
+    if (btn) {
+      btn.textContent = "Copied!";
+      setTimeout(() => {
+        btn.textContent = "Copy";
+      }, 2000);
+    }
+  } catch {}
+}
+function emailAnswers() {
+  if (!state.email)
+    return;
+  const body = $("answers-body");
+  if (!body)
+    return;
+  const text = body.textContent ?? "";
+  const subject = encodeURIComponent("Docs answers");
+  const mailBody = encodeURIComponent(text);
+  location.href = `mailto:${state.email}?subject=${subject}&body=${mailBody}`;
+}
 
 // node_modules/highlight.js/es/core.js
 var import_core = __toESM(require_core(), 1);
@@ -7062,6 +7269,32 @@ function tokensToText(tokens) {
 function strip(html) {
   return html.replace(/<script\b[\s\S]*?<\/script>/gi, "").replace(/<iframe\b[\s\S]*?<\/iframe>/gi, "");
 }
+var questionExtension = {
+  name: "question",
+  level: "block",
+  start(src) {
+    return src.match(/```question-/)?.index;
+  },
+  tokenizer(src, tokens) {
+    const match = /^```(question-(?:radio|checkbox|text))\n([\s\S]+?)\n```/.exec(src);
+    if (match) {
+      return {
+        type: "question",
+        raw: match[0],
+        lang: match[1],
+        text: match[2]
+      };
+    }
+    return false;
+  },
+  renderer(token) {
+    const q = parseQuestions(token.lang, token.text);
+    if (q)
+      return renderQuestionHTML(q) + `
+`;
+    return "";
+  }
+};
 var renderer = {
   heading({ tokens, depth }) {
     const text = this.parser.parseInline(tokens);
@@ -7103,7 +7336,10 @@ var renderer = {
   }
 };
 marked.use({
-  renderer
+  renderer,
+  extensions: [
+    questionExtension
+  ]
 });
 marked.use(markedHighlight({
   langPrefix: "hljs language-",
@@ -7120,6 +7356,7 @@ marked.use(markedHighlight({
 function parseMarkdown(md, _baseUrl) {
   baseUrl = _baseUrl;
   toc.length = 0;
+  resetQidCounter();
   let html = marked.parse(md, {
     async: false
   });
@@ -7249,6 +7486,7 @@ function renderContent() {
   }
   $contentInner.innerHTML = state.html;
   $content.scrollTop = 0;
+  initQuestions();
   setupScrollSpy();
   updateProgress();
 }
@@ -7382,6 +7620,24 @@ document.addEventListener("click", (e) => {
     block: "start"
   });
 });
+var answersBtn = $("answers-btn");
+answersBtn?.addEventListener("click", showAnswersModal);
+document.addEventListener("change", handleQuestionChange);
+document.addEventListener("input", handleQuestionInput);
+var answersClose = $("answers-close");
+answersClose?.addEventListener("click", hideAnswersModal);
+var answersCopy = $("answers-copy");
+answersCopy?.addEventListener("click", copyAnswers);
+var answersEmail = $("answers-email");
+answersEmail?.addEventListener("click", emailAnswers);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    const modal = $("answers-modal");
+    if (modal && !modal.hidden) {
+      hideAnswersModal();
+    }
+  }
+});
 
 // src/keyboard.ts
 function navIndex() {
@@ -7477,6 +7733,7 @@ try {
   const { configUrl, baseUrl, repoUrl, singleFile } = resolved;
   state.baseUrl = baseUrl;
   state.configUrl = configUrl;
+  state.email = new URLSearchParams(location.search).get("em") ?? "";
   window.addEventListener("hashchange", () => {
     if (state.singleFile)
       return;
@@ -7514,5 +7771,5 @@ try {
   render();
 }
 
-//# debugId=AE1127C4CE2185CF64756E2164756E21
+//# debugId=5C0B12BB4C64E14064756E2164756E21
 //# sourceMappingURL=index.js.map
