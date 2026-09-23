@@ -1,4 +1,5 @@
 import { RemoteDocsConfig, TocEntry } from "./types";
+import type { QuestionAnswer } from "./questions";
 
 export const state = {
 	config: null as RemoteDocsConfig,
@@ -10,4 +11,6 @@ export const state = {
 	loading: true,
 	error: "",
 	singleFile: false,
+	answers: new Map<number, QuestionAnswer>(),
+	email: "",
 };

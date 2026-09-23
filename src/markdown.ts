@@ -8,6 +8,11 @@ import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
 import { marked } from "marked";
 import { markedHighlight } from "marked-highlight";
+import {
+	parseQuestions,
+	renderQuestionHTML,
+	resetQidCounter,
+} from "./questions";
 import type { TocEntry } from "./types";
 import { escAttr } from "./utils";
 
@@ -52,6 +57,32 @@ function strip(html: string) {
 		.replace(/<script\b[\s\S]*?<\/script>/gi, "")
 		.replace(/<iframe\b[\s\S]*?<\/iframe>/gi, "");
 }
+
+const questionExtension = {
+	name: "question",
+	level: "block" as const,
+	start(src: string) {
+		return src.match(/```question-/)?.index;
+	},
+	tokenizer(src: string, tokens: any[]) {
+		const match =
+			/^```(question-(?:radio|checkbox|text))\n([\s\S]+?)\n```/.exec(src);
+		if (match) {
+			return {
+				type: "question",
+				raw: match[0],
+				lang: match[1],
+				text: match[2],
+			};
+		}
+		return false;
+	},
+	renderer(token: any) {
+		const q = parseQuestions(token.lang, token.text);
+		if (q) return renderQuestionHTML(q) + "\n";
+		return "";
+	},
+};
 
 const renderer = {
 	heading(this: any, { tokens, depth }: any) {
@@ -101,6 +132,9 @@ const renderer = {
 
 marked.use({
 	renderer,
+	extensions: [
+		questionExtension,
+	],
 });
 marked.use(
 	markedHighlight({
@@ -126,6 +160,7 @@ export function parseMarkdown(
 } {
 	baseUrl = _baseUrl;
 	toc.length = 0;
+	resetQidCounter();
 	let html = marked.parse(md, {
 		async: false,
 	}) as string;

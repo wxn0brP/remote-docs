@@ -1,4 +1,12 @@
 import { $ } from "./dom";
+import {
+	copyAnswers,
+	emailAnswers,
+	handleQuestionChange,
+	handleQuestionInput,
+	hideAnswersModal,
+	showAnswersModal,
+} from "./questions";
 import { forceReload, navigate } from "./router";
 import { state } from "./state";
 
@@ -49,4 +57,28 @@ document.addEventListener("click", e => {
 		behavior: "smooth",
 		block: "start",
 	});
+});
+
+const answersBtn = $("answers-btn");
+answersBtn?.addEventListener("click", showAnswersModal);
+
+document.addEventListener("change", handleQuestionChange);
+document.addEventListener("input", handleQuestionInput);
+
+const answersClose = $("answers-close");
+answersClose?.addEventListener("click", hideAnswersModal);
+
+const answersCopy = $("answers-copy");
+answersCopy?.addEventListener("click", copyAnswers);
+
+const answersEmail = $("answers-email");
+answersEmail?.addEventListener("click", emailAnswers);
+
+document.addEventListener("keydown", e => {
+	if (e.key === "Escape") {
+		const modal = $("answers-modal");
+		if (modal && !modal.hidden) {
+			hideAnswersModal();
+		}
+	}
 });

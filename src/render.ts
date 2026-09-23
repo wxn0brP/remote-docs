@@ -1,4 +1,5 @@
 import { $, $content, $contentInner, $nav, $toc } from "./dom";
+import { initQuestions } from "./questions";
 import { setupScrollSpy, updateProgress } from "./scroll";
 import { state } from "./state";
 import type { NavItem } from "./types";
@@ -78,6 +79,7 @@ export function renderContent() {
 	}
 	$contentInner.innerHTML = state.html;
 	$content.scrollTop = 0;
+	initQuestions();
 	setupScrollSpy();
 	updateProgress();
 }

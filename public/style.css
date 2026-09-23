@@ -112,3 +112,146 @@ button:hover {
 summary {
 	cursor: pointer;
 }
+
+/* Questions */
+.q-block {
+	background: var(--bg-2);
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	padding: 16px 20px;
+	margin: 20px 0;
+}
+
+.q-text {
+	font-weight: 600;
+	margin: 0 0 12px;
+	color: var(--fg);
+}
+
+.q-option {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 0;
+	cursor: pointer;
+	color: var(--fg);
+}
+
+.q-option input {
+	accent-color: var(--accent);
+}
+
+.q-textarea,
+.q-custom-input {
+	width: 100%;
+	background: var(--bg);
+	color: var(--fg);
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	padding: 8px 12px;
+	font: inherit;
+	resize: vertical;
+	margin-top: 8px;
+}
+
+.q-textarea:focus,
+.q-custom-input:focus {
+	outline: none;
+	border-color: var(--accent);
+}
+
+.q-custom {
+	margin-top: 4px;
+}
+
+/* Answers button */
+#answers-btn {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	background: var(--accent);
+	color: var(--bg);
+	border: none;
+	padding: 10px 20px;
+	border-radius: 24px;
+	font-weight: 600;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	z-index: 100;
+}
+
+#answers-btn:hover {
+	background: var(--accent-hi);
+	color: var(--bg);
+}
+
+/* Answers modal */
+#answers-modal {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.7);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+#answers-modal[hidden] {
+	display: none;
+}
+
+.answers-card {
+	background: var(--bg-2);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 24px;
+	max-width: 600px;
+	width: 90%;
+	max-height: 80vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.answers-card h2 {
+	margin: 0 0 16px;
+	font-size: 1.2em;
+}
+
+#answers-body {
+	background: var(--bg);
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	padding: 16px;
+	overflow-y: auto;
+	flex: 1;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	font-size: 0.9em;
+	line-height: 1.5;
+	margin: 0 0 16px;
+}
+
+.answers-actions {
+	display: flex;
+	gap: 8px;
+	justify-content: flex-end;
+}
+
+.answers-actions button {
+	padding: 8px 16px;
+	border-radius: 6px;
+}
+
+#answers-copy {
+	background: var(--accent);
+	color: var(--bg);
+	border-color: var(--accent);
+}
+
+#answers-copy:hover {
+	background: var(--accent-hi);
+	border-color: var(--accent-hi);
+}
+
+#answers-email {
+	background: var(--bg-3);
+}

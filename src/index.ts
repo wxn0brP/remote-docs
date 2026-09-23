@@ -13,6 +13,7 @@ try {
 	const { configUrl, baseUrl, repoUrl, singleFile } = resolved;
 	state.baseUrl = baseUrl;
 	state.configUrl = configUrl;
+	state.email = new URLSearchParams(location.search).get("em") ?? "";
 
 	window.addEventListener("hashchange", () => {
 		if (state.singleFile) return;

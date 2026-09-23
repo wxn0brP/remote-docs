@@ -35,6 +35,18 @@
 		<aside id="toc"></aside>
 	</main>
 	<div id="progress" aria-hidden="true"></div>
+	<button id="answers-btn" type="button" hidden>Show answers</button>
+	<div id="answers-modal" role="dialog" aria-modal="true" aria-labelledby="answers-title" hidden>
+		<div class="answers-card">
+			<h2 id="answers-title">Your answers</h2>
+			<pre id="answers-body"></pre>
+			<div class="answers-actions">
+				<button id="answers-copy" type="button">Copy</button>
+				<button id="answers-email" type="button" hidden>Send email</button>
+				<button id="answers-close" type="button">Close</button>
+			</div>
+		</div>
+	</div>
 	<div id="help-overlay" role="dialog" aria-modal="true" aria-labelledby="help-title">
 		<div class="help-card">
 			<h2 id="help-title">Keyboard shortcuts</h2>
