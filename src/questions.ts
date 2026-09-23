@@ -140,8 +140,10 @@ export function handleQuestionChange(e: Event) {
 		const values: string[] = [];
 		let hasCustom = false;
 		for (const cb of checked) {
-			if (cb.value === "__custom__") hasCustom = true;
-			else values.push(options[Number(cb.value)]);
+			if (cb.value === "__custom__") {
+				hasCustom = true;
+				values.push("__custom__");
+			} else values.push(options[Number(cb.value)]);
 		}
 		const ta = block.querySelector<HTMLTextAreaElement>(".q-custom-input");
 		if (ta) ta.hidden = !hasCustom;
