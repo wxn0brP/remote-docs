@@ -1724,9 +1724,10 @@ function handleQuestionChange(e) {
     const values = [];
     let hasCustom = false;
     for (const cb of checked) {
-      if (cb.value === "__custom__")
+      if (cb.value === "__custom__") {
         hasCustom = true;
-      else
+        values.push("__custom__");
+      } else
         values.push(options[Number(cb.value)]);
     }
     const ta = block.querySelector(".q-custom-input");
@@ -7771,5 +7772,5 @@ try {
   render();
 }
 
-//# debugId=5C0B12BB4C64E14064756E2164756E21
+//# debugId=6EFE2A04E33C10C064756E2164756E21
 //# sourceMappingURL=index.js.map
