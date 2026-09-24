@@ -1633,6 +1633,36 @@ var $contentInner = $("content-inner");
 var $toc = $("toc");
 var $progress = $("progress");
 
+// src/questions.utils.ts
+var STORAGE_KEY = "remote_docs_answers";
+function loadAllAnswers() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored)
+    return new Map;
+  try {
+    const obj = JSON.parse(stored);
+    return new Map(Object.entries(obj));
+  } catch {
+    return new Map;
+  }
+}
+function saveAllAnswers(answers) {
+  const obj = {};
+  for (const [k, v] of answers)
+    obj[k] = v;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+}
+function getQuestionText(block) {
+  return block.querySelector(".q-text")?.textContent ?? "";
+}
+function persistAnswer(qText, answer) {
+  if (!qText)
+    return;
+  const all = loadAllAnswers();
+  all.set(qText, answer);
+  saveAllAnswers(all);
+}
+
 // src/questions.ts
 function parseQuestions(lang, raw) {
   const type = lang.replace(/^question-/, "").trim();
@@ -1669,22 +1699,33 @@ function initQuestions() {
   const blocks = document.querySelectorAll(".q-block");
   if (!blocks.length)
     return;
+  const allSaved = loadAllAnswers();
   for (const block of blocks) {
     const qid = Number(block.dataset.qid);
     const type = block.dataset.type;
-    const saved = state.answers.get(qid);
+    const qText = getQuestionText(block);
+    const saved = allSaved.get(qText);
     if (!saved)
       continue;
+    state.answers.set(qid, saved);
     if (type === "text") {
       const ta = block.querySelector(".q-textarea");
       if (ta)
         ta.value = String(saved.value);
     } else {
+      const options = JSON.parse(block.dataset.options ?? "[]");
       const values = Array.isArray(saved.value) ? saved.value : [
         saved.value
       ];
       for (const v of values) {
-        const input = block.querySelector(`input[value="${v}"]`);
+        let selector;
+        if (v === "__custom__") {
+          selector = `input[value="__custom__"]`;
+        } else {
+          const idx = options.indexOf(v);
+          selector = idx >= 0 ? `input[value="${idx}"]` : `input[value="${v}"]`;
+        }
+        const input = block.querySelector(selector);
         if (input) {
           input.checked = true;
           if (v === "__custom__") {
@@ -1698,6 +1739,7 @@ function initQuestions() {
       }
     }
   }
+  updateAnswersButton();
 }
 function handleQuestionChange(e) {
   const target = e.target;
@@ -1709,15 +1751,18 @@ function handleQuestionChange(e) {
     return;
   const qid = Number(block.dataset.qid);
   const type = block.dataset.type;
+  const qText = getQuestionText(block);
   if (type === "radio") {
     const options = JSON.parse(block.dataset.options ?? "[]");
     const isCustom = input.value === "__custom__";
     const ta = block.querySelector(".q-custom-input");
     if (ta)
       ta.hidden = !isCustom;
-    state.answers.set(qid, {
+    const answer = {
       value: isCustom ? "__custom__" : options[Number(input.value)]
-    });
+    };
+    state.answers.set(qid, answer);
+    persistAnswer(qText, answer);
   } else if (type === "checkbox") {
     const options = JSON.parse(block.dataset.options ?? "[]");
     const checked = Array.from(block.querySelectorAll("input:checked"));
@@ -1733,9 +1778,11 @@ function handleQuestionChange(e) {
     const ta = block.querySelector(".q-custom-input");
     if (ta)
       ta.hidden = !hasCustom;
-    state.answers.set(qid, {
+    const answer = {
       value: values
-    });
+    };
+    state.answers.set(qid, answer);
+    persistAnswer(qText, answer);
   }
   updateAnswersButton();
 }
@@ -1747,14 +1794,19 @@ function handleQuestionInput(e) {
   const qid = Number(block.dataset.qid);
   const type = block.dataset.type;
   const ta = target;
+  const qText = getQuestionText(block);
   if (type === "text") {
-    state.answers.set(qid, {
+    const answer = {
       value: ta.value
-    });
+    };
+    state.answers.set(qid, answer);
+    persistAnswer(qText, answer);
   } else if (ta.classList.contains("q-custom-input")) {
     const answer = state.answers.get(qid);
-    if (answer)
+    if (answer) {
       answer.custom = ta.value;
+      persistAnswer(qText, answer);
+    }
   }
   updateAnswersButton();
 }
@@ -1837,6 +1889,35 @@ function emailAnswers() {
   const subject = encodeURIComponent("Docs answers");
   const mailBody = encodeURIComponent(text);
   location.href = `mailto:${state.email}?subject=${subject}&body=${mailBody}`;
+}
+function clearAllAnswers() {
+  if (!confirm("Clear all saved answers? This cannot be undone."))
+    return;
+  if (!confirm("Clear all saved answers? This cannot be undone."))
+    return;
+  localStorage.removeItem(STORAGE_KEY);
+  state.answers.clear();
+  const blocks = document.querySelectorAll(".q-block");
+  for (const block of blocks) {
+    const type = block.dataset.type;
+    if (type === "text") {
+      const ta = block.querySelector(".q-textarea");
+      if (ta)
+        ta.value = "";
+    } else {
+      const inputs = block.querySelectorAll("input");
+      for (const input of inputs) {
+        input.checked = false;
+      }
+      const ta = block.querySelector(".q-custom-input");
+      if (ta) {
+        ta.hidden = true;
+        ta.value = "";
+      }
+    }
+  }
+  updateAnswersButton();
+  hideAnswersModal();
 }
 
 // node_modules/highlight.js/es/core.js
@@ -7631,6 +7712,8 @@ var answersCopy = $("answers-copy");
 answersCopy?.addEventListener("click", copyAnswers);
 var answersEmail = $("answers-email");
 answersEmail?.addEventListener("click", emailAnswers);
+var answersClear = $("answers-clear");
+answersClear?.addEventListener("click", clearAllAnswers);
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     const modal = $("answers-modal");
@@ -7772,5 +7855,5 @@ try {
   render();
 }
 
-//# debugId=6EFE2A04E33C10C064756E2164756E21
+//# debugId=D81FCDD216E1B17964756E2164756E21
 //# sourceMappingURL=index.js.map
