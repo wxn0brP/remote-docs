@@ -6,6 +6,7 @@ import {
 	handleQuestionInput,
 	hideAnswersModal,
 	showAnswersModal,
+	clearAllAnswers,
 } from "./questions";
 import { forceReload, navigate } from "./router";
 import { state } from "./state";
@@ -73,6 +74,9 @@ answersCopy?.addEventListener("click", copyAnswers);
 
 const answersEmail = $("answers-email");
 answersEmail?.addEventListener("click", emailAnswers);
+
+const answersClear = $("answers-clear");
+answersClear?.addEventListener("click", clearAllAnswers);
 
 document.addEventListener("keydown", e => {
 	if (e.key === "Escape") {

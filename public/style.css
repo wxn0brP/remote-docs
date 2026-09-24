@@ -233,12 +233,25 @@ summary {
 .answers-actions {
 	display: flex;
 	gap: 8px;
-	justify-content: flex-end;
+	justify-content: space-between;
 }
 
 .answers-actions button {
 	padding: 8px 16px;
 	border-radius: 6px;
+}
+
+#answers-clear {
+	background: var(--error);
+	color: var(--bg);
+	border-color: var(--error);
+	margin-right: auto;
+}
+
+#answers-clear:hover {
+	background: #ef4444;
+	border-color: #ef4444;
+	color: var(--bg);
 }
 
 #answers-copy {

@@ -1,4 +1,10 @@
 import { $ } from "./dom";
+import {
+	getQuestionText,
+	loadAllAnswers,
+	persistAnswer,
+	STORAGE_KEY,
+} from "./questions.utils";
 import { state } from "./state";
 import { esc, escAttr } from "./utils";
 
@@ -78,25 +84,36 @@ export function initQuestions() {
 	const blocks = document.querySelectorAll<HTMLElement>(".q-block");
 	if (!blocks.length) return;
 
+	const allSaved = loadAllAnswers();
+
 	for (const block of blocks) {
 		const qid = Number(block.dataset.qid);
 		const type = block.dataset.type as string;
-		const saved = state.answers.get(qid);
+		const qText = getQuestionText(block);
+
+		const saved = allSaved.get(qText);
 		if (!saved) continue;
+		state.answers.set(qid, saved);
 
 		if (type === "text") {
 			const ta = block.querySelector<HTMLTextAreaElement>(".q-textarea");
 			if (ta) ta.value = String(saved.value);
 		} else {
+			const options = JSON.parse(block.dataset.options ?? "[]") as string[];
 			const values = Array.isArray(saved.value)
 				? saved.value
 				: [
 						saved.value,
 					];
 			for (const v of values) {
-				const input = block.querySelector<HTMLInputElement>(
-					`input[value="${v}"]`,
-				);
+				let selector: string;
+				if (v === "__custom__") {
+					selector = `input[value="__custom__"]`;
+				} else {
+					const idx = options.indexOf(v);
+					selector = idx >= 0 ? `input[value="${idx}"]` : `input[value="${v}"]`;
+				}
+				const input = block.querySelector<HTMLInputElement>(selector);
 				if (input) {
 					input.checked = true;
 					if (v === "__custom__") {
@@ -111,6 +128,8 @@ export function initQuestions() {
 			}
 		}
 	}
+
+	updateAnswersButton();
 }
 
 export function handleQuestionChange(e: Event) {
@@ -124,14 +143,18 @@ export function handleQuestionChange(e: Event) {
 	const qid = Number(block.dataset.qid);
 	const type = block.dataset.type as string;
 
+	const qText = getQuestionText(block);
+
 	if (type === "radio") {
 		const options = JSON.parse(block.dataset.options ?? "[]") as string[];
 		const isCustom = input.value === "__custom__";
 		const ta = block.querySelector<HTMLTextAreaElement>(".q-custom-input");
 		if (ta) ta.hidden = !isCustom;
-		state.answers.set(qid, {
+		const answer = {
 			value: isCustom ? "__custom__" : options[Number(input.value)],
-		});
+		};
+		state.answers.set(qid, answer);
+		persistAnswer(qText, answer);
 	} else if (type === "checkbox") {
 		const options = JSON.parse(block.dataset.options ?? "[]") as string[];
 		const checked = Array.from(
@@ -147,9 +170,11 @@ export function handleQuestionChange(e: Event) {
 		}
 		const ta = block.querySelector<HTMLTextAreaElement>(".q-custom-input");
 		if (ta) ta.hidden = !hasCustom;
-		state.answers.set(qid, {
+		const answer = {
 			value: values,
-		});
+		};
+		state.answers.set(qid, answer);
+		persistAnswer(qText, answer);
 	}
 	updateAnswersButton();
 }
@@ -162,14 +187,20 @@ export function handleQuestionInput(e: Event) {
 	const qid = Number(block.dataset.qid);
 	const type = block.dataset.type as string;
 	const ta = target as HTMLTextAreaElement;
+	const qText = getQuestionText(block);
 
 	if (type === "text") {
-		state.answers.set(qid, {
+		const answer = {
 			value: ta.value,
-		});
+		};
+		state.answers.set(qid, answer);
+		persistAnswer(qText, answer);
 	} else if (ta.classList.contains("q-custom-input")) {
 		const answer = state.answers.get(qid);
-		if (answer) answer.custom = ta.value;
+		if (answer) {
+			answer.custom = ta.value;
+			persistAnswer(qText, answer);
+		}
 	}
 	updateAnswersButton();
 }
@@ -257,4 +288,34 @@ export function emailAnswers() {
 	const subject = encodeURIComponent("Docs answers");
 	const mailBody = encodeURIComponent(text);
 	location.href = `mailto:${state.email}?subject=${subject}&body=${mailBody}`;
+}
+
+export function clearAllAnswers() {
+	if (!confirm("Clear all saved answers? This cannot be undone.")) return;
+	if (!confirm("Clear all saved answers? This cannot be undone.")) return;
+
+	localStorage.removeItem(STORAGE_KEY);
+	state.answers.clear();
+
+	const blocks = document.querySelectorAll<HTMLElement>(".q-block");
+	for (const block of blocks) {
+		const type = block.dataset.type as string;
+		if (type === "text") {
+			const ta = block.querySelector<HTMLTextAreaElement>(".q-textarea");
+			if (ta) ta.value = "";
+		} else {
+			const inputs = block.querySelectorAll<HTMLInputElement>("input");
+			for (const input of inputs) {
+				input.checked = false;
+			}
+			const ta = block.querySelector<HTMLTextAreaElement>(".q-custom-input");
+			if (ta) {
+				ta.hidden = true;
+				ta.value = "";
+			}
+		}
+	}
+
+	updateAnswersButton();
+	hideAnswersModal();
 }
