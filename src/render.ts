@@ -1,4 +1,5 @@
 import { $, $content, $contentInner, $nav, $toc } from "./dom";
+import { renderMermaid } from "./mermaid";
 import { initQuestions } from "./questions";
 import { setupScrollSpy, updateProgress } from "./scroll";
 import { state } from "./state";
@@ -82,6 +83,11 @@ export function renderContent() {
 	initQuestions();
 	setupScrollSpy();
 	updateProgress();
+	void renderMermaid($contentInner).then(rendered => {
+		if (!rendered) return;
+		setupScrollSpy();
+		updateProgress();
+	});
 }
 
 export function render() {

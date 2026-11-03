@@ -14,7 +14,7 @@ import {
 	resetQidCounter,
 } from "./questions";
 import type { TocEntry } from "./types";
-import { escAttr } from "./utils";
+import { esc, escAttr } from "./utils";
 
 hljs.registerLanguage("javascript", javascript);
 hljs.registerLanguage("js", javascript);
@@ -57,6 +57,31 @@ function strip(html: string) {
 		.replace(/<script\b[\s\S]*?<\/script>/gi, "")
 		.replace(/<iframe\b[\s\S]*?<\/iframe>/gi, "");
 }
+
+const mermaidExtension = {
+	name: "mermaid",
+	level: "block" as const,
+	start(src: string) {
+		return src.match(/```mermaid/)?.index;
+	},
+	tokenizer(src: string) {
+		const match =
+			/^```mermaid(?:[ \t][^\n]*)?\r?\n([\s\S]+?)\r?\n```[ \t]*(?:\r?\n|$)/.exec(
+				src,
+			);
+		if (match) {
+			return {
+				type: "mermaid",
+				raw: match[0],
+				text: match[1],
+			};
+		}
+		return false;
+	},
+	renderer(token: any) {
+		return `<div class="mermaid">${esc(token.text)}</div>\n`;
+	},
+};
 
 const questionExtension = {
 	name: "question",
@@ -133,6 +158,7 @@ const renderer = {
 marked.use({
 	renderer,
 	extensions: [
+		mermaidExtension,
 		questionExtension,
 	],
 });
